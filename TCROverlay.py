@@ -153,3 +153,4 @@ def acUpdate(deltaT):
     sock.sendto(sendString.encode(), server_address)
 
     # TODO Add session start flag for practice and qualifying
+    # Test
