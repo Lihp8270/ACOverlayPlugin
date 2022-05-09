@@ -34,6 +34,7 @@ class driver:
         self.raceStarted = 0
         self.lastSplineForStart = 999
         self.fastestLap = 0
+        self.sessionReset = 0
 
 
 def acMain(ac_version):
@@ -111,6 +112,7 @@ def acUpdate(deltaT):
         if not sessionLive:
             if ac.getCarState(driverSession.id, acsys.CS.BestLap) != 0 and driverSession.raceStarted == 1:
                 sessionLive = True
+                driverSession.sessionReset = 0
                 ac.console("Session Live")
 
     # Checks drivers best laps
@@ -135,6 +137,7 @@ def acUpdate(deltaT):
                 driverDefault.delta = 0.000
                 driverDefault.lastSplineForStart = 999
                 driverDefault.raceStarted = 0
+                driverDefault.sessionReset = 1
 
     # Build and send datagram
     for driverDatagram in driverList:
@@ -148,9 +151,9 @@ def acUpdate(deltaT):
         sendString = sendString + str(format(driverDatagram.delta, ".3f")) + ";"
         sendString = sendString + str(driverDatagram.onTrack) + ";"
         sendString = sendString + str(driverDatagram.raceStarted) + ";"
+        sendString = sendString + str(driverDatagram.sessionReset) + ";"
         sendString = sendString + str(driverDatagram.leaderboardPosition) + ":"
 
     sock.sendto(sendString.encode(), server_address)
 
     # TODO Add session start flag for practice and qualifying
-    # Test
