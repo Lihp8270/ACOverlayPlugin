@@ -38,9 +38,10 @@ class driver:
 
 
 def acMain(ac_version):
-    global sock, server_address, driverList, lastSpline, sessionLive, resetFlag
+    global sock, server_address, driverList, lastSpline, sessionLive, resetFlag, resetSessionReset
     sessionLive = False
     resetFlag = False
+    resetSessionReset = False
     driverList = []
     lastSpline = 0.000
 
@@ -62,7 +63,7 @@ def acMain(ac_version):
 
 
 def acUpdate(deltaT):
-    global driverList, lastSpline, sessionLive, resetFlag
+    global driverList, lastSpline, sessionLive, resetFlag, resetSessionReset
 
     sendString = ""
     i = 0
@@ -112,8 +113,17 @@ def acUpdate(deltaT):
         if not sessionLive:
             if ac.getCarState(driverSession.id, acsys.CS.BestLap) != 0 and driverSession.raceStarted == 1:
                 sessionLive = True
-                driverSession.sessionReset = 0
+                resetSessionReset = True
+                # driverSession.sessionReset = 0
                 ac.console("Session Live")
+
+    if resetSessionReset:
+        ac.console("Reset sessionReset to 0 all drivers")
+        for resetDriver in driverList:
+            resetDriver.sessionReset = 0
+            resetSessionReset = False
+            ac.console(str(resetDriver.sessionReset))
+
 
     # Checks drivers best laps
     # if best lap is 0 for all drivers, reset flag is set true to get overlay to trigger next timer
@@ -155,5 +165,3 @@ def acUpdate(deltaT):
         sendString = sendString + str(driverDatagram.leaderboardPosition) + ":"
 
     sock.sendto(sendString.encode(), server_address)
-
-    # TODO Add session start flag for practice and qualifying
