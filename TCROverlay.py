@@ -69,9 +69,6 @@ def acUpdate(deltaT):
     i = 0
     leaderID = 0
 
-    # Check for new drivers
-    # TODO
-
     # Get leaders carID
     while i < ac.getCarsCount():
         if ac.getCarRealTimeLeaderboardPosition(i) == 0:
@@ -114,15 +111,13 @@ def acUpdate(deltaT):
             if ac.getCarState(driverSession.id, acsys.CS.BestLap) != 0 and driverSession.raceStarted == 1:
                 sessionLive = True
                 resetSessionReset = True
-                # driverSession.sessionReset = 0
+                driverSession.sessionReset = 0
                 ac.console("Session Live")
 
     if resetSessionReset:
-        ac.console("Reset sessionReset to 0 all drivers")
         for resetDriver in driverList:
             resetDriver.sessionReset = 0
             resetSessionReset = False
-            ac.console(str(resetDriver.sessionReset))
 
 
     # Checks drivers best laps
@@ -165,3 +160,5 @@ def acUpdate(deltaT):
         sendString = sendString + str(driverDatagram.leaderboardPosition) + ":"
 
     sock.sendto(sendString.encode(), server_address)
+
+    # TODO Add Laptime
