@@ -85,6 +85,10 @@ def acUpdate(deltaT):
                 relativeDistance = (ac.getCarState(leaderID, acsys.CS.NormalizedSplinePosition) + ac.getCarState(leaderID, acsys.CS.LapCount)) - (ac.getCarState(driver.id, acsys.CS.NormalizedSplinePosition) + ac.getCarState(driver.id, acsys.CS.LapCount))
                 delta = relativeDistance * estLeaderTime
                 driver.delta = delta
+                driver.fastestLap = ac.getCarState(driver.id, acsys.CS.BestLap)
+                if ac.getCarState(driver.id, acsys.CS.LapInvalidated) == 1:
+                    ac.console(str(driver.driverName))
+                    ac.console("Invalid Lap")
 
                 if ac.isCarInPitline(driver.id) == 1 or ac.isCarInPit(driver.id) == 1:
                     driver.onTrack = 0
@@ -157,6 +161,7 @@ def acUpdate(deltaT):
         sendString = sendString + str(driverDatagram.onTrack) + ";"
         sendString = sendString + str(driverDatagram.raceStarted) + ";"
         sendString = sendString + str(driverDatagram.sessionReset) + ";"
+        sendString = sendString + str(driverDatagram.fastestLap) + ";"
         sendString = sendString + str(driverDatagram.leaderboardPosition) + ":"
 
     sock.sendto(sendString.encode(), server_address)
