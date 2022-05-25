@@ -86,9 +86,6 @@ def acUpdate(deltaT):
                 delta = relativeDistance * estLeaderTime
                 driver.delta = delta
                 driver.fastestLap = ac.getCarState(driver.id, acsys.CS.BestLap)
-                if ac.getCarState(driver.id, acsys.CS.LapInvalidated) == 1:
-                    ac.console(str(driver.driverName))
-                    ac.console("Invalid Lap")
 
                 if ac.isCarInPitline(driver.id) == 1 or ac.isCarInPit(driver.id) == 1:
                     driver.onTrack = 0
@@ -123,17 +120,21 @@ def acUpdate(deltaT):
             resetDriver.sessionReset = 0
             resetSessionReset = False
 
+    for driverLapTime in driverList:
+        if driverLapTime.lapCount < ac.getCarState(driverLapTime.id, acsys.CS.LapCount):
+            driverLapTime.fastestLap = ac.getCarState(driverLapTime.id, acsys.CS.BestLap)
 
     # Checks drivers best laps
     # if best lap is 0 for all drivers, reset flag is set true to get overlay to trigger next timer
     for driverReset in driverList:
-        driverReset.fastestLap = ac.getCarState(driverReset.id, acsys.CS.BestLap)
+        # driverReset.fastestLap = ac.getCarState(driverReset.id, acsys.CS.BestLap)
         if sessionLive:
-            if driverReset.fastestLap != 0:
+            if ac.getCarState(driverReset.id, acsys.CS.BestLap) != 0:
                 resetFlag = False
                 break
             else:
                 resetFlag = True
+
 
     # If Reset flag is true, set reset trigger, default flags, and default driver data
     if sessionLive:
