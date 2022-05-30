@@ -144,6 +144,7 @@ def acUpdate(deltaT):
             ac.console("Session Reset")
             for driverDefault in driverList:
                 driverDefault.lapCount = 0
+                driverDefault.fastestLap = 0
                 driverDefault.delta = 0.000
                 driverDefault.lastSplineForStart = 999
                 driverDefault.raceStarted = 0
