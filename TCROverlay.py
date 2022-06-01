@@ -35,10 +35,14 @@ class driver:
         self.lastSplineForStart = 999
         self.fastestLap = 0
         self.sessionReset = 0
+        self.qualifyOver = 0
+        self.lastSplineForStart = 999
+        self.raceStartPos = 99
 
 
 def acMain(ac_version):
-    global sock, server_address, driverList, lastSpline, sessionLive, resetFlag, resetSessionReset
+    global sock, server_address, driverList, lastSpline, sessionLive, resetFlag, resetSessionReset, raceStartCheck
+    raceStartCheck = False
     sessionLive = False
     resetFlag = False
     resetSessionReset = False
@@ -49,7 +53,7 @@ def acMain(ac_version):
     server_address = ('127.0.0.1', 9090)
 
     appWindow = ac.newApp("TCR Overlay")
-    ac.console("Overlay compatible: V2.1.0")
+    ac.console("Overlay compatible: V2.2.x")
     ac.setSize(appWindow, 200, 600)
 
     # Generate initial driver list
@@ -91,10 +95,10 @@ def acUpdate(deltaT):
                     driver.onTrack = 0
                 else:
                     driver.onTrack = 1
+
                 driver.leaderboardPosition = ac.getCarRealTimeLeaderboardPosition(driver.id) + 1
 
-            lastSpline = ac.getCarState(leaderID, acsys.CS.NormalizedSplinePosition) + ac.getCarState(leaderID,
-                                                                                                      acsys.CS.LapCount)
+            lastSpline = ac.getCarState(leaderID, acsys.CS.NormalizedSplinePosition) + ac.getCarState(leaderID, acsys.CS.LapCount)
 
     # Start session when driver crosses the line (For normal Race sessions)
     for driverSession in driverList:
@@ -102,8 +106,9 @@ def acUpdate(deltaT):
             if ac.getCarState(driverSession.id, acsys.CS.NormalizedSplinePosition) > 0.5:
                 driverSession.lastSplineForStart = ac.getCarState(driverSession.id, acsys.CS.NormalizedSplinePosition)
 
-            if ac.getCarState(driverSession.id, acsys.CS.NormalizedSplinePosition) < 0.1:
+            if ac.getCarState(driverSession.id, acsys.CS.NormalizedSplinePosition) < 0.01:
                 driverSession.raceStarted = 1
+                driverSession.raceStartPos = ac.getCarRealTimeLeaderboardPosition(driverSession.id) + 1
                 ac.console("Race Started")
 
         # Set Session live flag if the driver has already completed a lap.
@@ -127,14 +132,12 @@ def acUpdate(deltaT):
     # Checks drivers best laps
     # if best lap is 0 for all drivers, reset flag is set true to get overlay to trigger next timer
     for driverReset in driverList:
-        # driverReset.fastestLap = ac.getCarState(driverReset.id, acsys.CS.BestLap)
         if sessionLive:
             if ac.getCarState(driverReset.id, acsys.CS.BestLap) != 0:
                 resetFlag = False
                 break
             else:
                 resetFlag = True
-
 
     # If Reset flag is true, set reset trigger, default flags, and default driver data
     if sessionLive:
@@ -164,8 +167,7 @@ def acUpdate(deltaT):
         sendString = sendString + str(driverDatagram.raceStarted) + ";"
         sendString = sendString + str(driverDatagram.sessionReset) + ";"
         sendString = sendString + str(driverDatagram.fastestLap) + ";"
+        sendString = sendString + str(driverDatagram.raceStartPos) + ";"
         sendString = sendString + str(driverDatagram.leaderboardPosition) + ":"
 
     sock.sendto(sendString.encode(), server_address)
-
-    # TODO Add Laptime
